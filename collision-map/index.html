@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Road collisions within ~½ mile</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --bg:#14130f; --yellow:#EAB308; --yellow2:#FFE03B; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; margin:0; background:#fff; color:#1B1A17; }
+  #panel { padding:16px 14px 8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  #pc {
+    padding:11px 12px; font-size:16px; text-transform:uppercase; letter-spacing:.5px;
+    width:150px; background:#fff; color:#1B1A17; border:1.5px solid #ccc; border-radius:8px; outline:none;
+  }
+  #pc:focus { border-color:var(--yellow); }
+  #pc::placeholder { color:#999; }
+  #go {
+    padding:11px 20px; font-size:16px; font-weight:700; cursor:pointer;
+    background:var(--yellow); color:#14130f; border:none; border-radius:8px;
+  }
+  #go:hover { background:var(--yellow2); }
+  #wynik { padding:6px 14px 14px; min-height:52px; }
+  #wynik .num { font-size:clamp(30px,9vw,46px); font-weight:800; color:#B8860B; line-height:1.1; }
+  #wynik .sub { font-size:clamp(15px,4vw,18px); color:#333; margin-top:2px; }
+  #wynik.err { color:#c00; font-size:18px; padding-top:12px; }
+  #map { height:64vh; width:100%; background:#eee; }
+  #foot { padding:10px 14px 16px; font-size:12px; color:#888; line-height:1.5; }
+  #foot b { color:#B8860B; font-weight:700; }
+  .legend { background:rgba(255,255,255,.92); color:#333; padding:8px 10px; border-radius:8px; font-size:13px;
+            line-height:20px; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  .legend .dot { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:7px; vertical-align:middle; }
+  .leaflet-popup-content-wrapper { border-radius:10px; border-left:3px solid var(--yellow); }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <input id="pc" placeholder="e.g. SW1A 1AA" autocomplete="off">
+    <button id="go">Search</button>
+  </div>
+  <div id="wynik" class="sub">Enter a UK postcode.</div>
+  <div id="map"></div>
+  <div id="foot">
+    Source: DfT STATS19 · recorded police-reported collisions · not a risk score · <b>@datanobodyasked</b>
+  </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const RADIUS_M = 804.672;
+const STYLE = {
+  1: { r:7, c:"#d7191c", o:0.95 },   // fatal
+  2: { r:6, c:"#fd8d3c", o:0.90 },   // serious
+  3: { r:4, c:"#2c7fb8", o:0.70 }    // slight
+};
+const SEV_TXT = { 1: "fatal", 2: "serious", 3: "slight" };
+
+let DATA = null, YEAR = null;
+let map, warstwa;
+
+map = L.map("map").setView([54.5, -3], 6);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+  { attribution: "© OpenStreetMap © CARTO", maxZoom: 19 }).addTo(map);
+warstwa = L.layerGroup().addTo(map);
+
+const legenda = L.control({ position: "bottomright" });
+legenda.onAdd = function () {
+  const div = L.DomUtil.create("div", "legend");
+  div.innerHTML =
+    '<div><span class="dot" style="background:#fff;border:2px solid #B8860B"></span> Your postcode</div>' +
+    '<div><span class="dot" style="background:#d7191c"></span> fatal</div>' +
+    '<div><span class="dot" style="background:#fd8d3c"></span> serious</div>' +
+    '<div><span class="dot" style="background:#2c7fb8"></span> slight</div>';
+  return div;
+};
+legenda.addTo(map);
+
+function haversine(la1, lo1, la2, lo2) {
+  const R = 6371000, r = d => d * Math.PI / 180;
+  const dLa = r(la2 - la1), dLo = r(lo2 - lo1);
+  const a = Math.sin(dLa/2)**2 + Math.cos(r(la1))*Math.cos(r(la2))*Math.sin(dLo/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function odleglosc(m) {
+  const yd = m * 1.09361;
+  return yd < 350 ? `${Math.round(yd)} yd` : `${(m / 1609.344).toFixed(1)} mi`;
+}
+
+function setBig(num, sub) {
+  const el = document.getElementById("wynik");
+  el.className = "";
+  el.innerHTML = `<div class="num">${num}</div><div class="sub">${sub}</div>`;
+}
+function setMsg(txt, err) {
+  const el = document.getElementById("wynik");
+  el.className = err ? "err" : "sub";
+  el.textContent = txt;
+}
+
+function pinKolizji(la, lo, sev, dist) {
+  const s = STYLE[sev] || { r:5, c:"#888", o:0.8 };
+  L.circleMarker([la, lo], {
+      radius: s.r, color: "#fff", weight: 1.2,
+      fillColor: s.c, fillOpacity: s.o
+    })
+    .addTo(warstwa)
+    .bindPopup(`Collision: <b>${SEV_TXT[sev] || "?"}</b><br>${odleglosc(dist)} from postcode<br><small>${YEAR}</small>`);
+}
+
+async function init() {
+  const j = await (await fetch("data.json")).json();
+  DATA = j.points;
+  YEAR = j.year;
+}
+
+async function szukaj() {
+  const pc = document.getElementById("pc").value.trim();
+  if (!pc) return;
+  if (!DATA) { setMsg("Loading data…", false); return; }
+  setMsg("Searching…", false);
+  warstwa.clearLayers();
+
+  let lat, lon;
+  try {
+    const r = await fetch("https://api.postcodes.io/postcodes/" + encodeURIComponent(pc));
+    const j = await r.json();
+    if (j.status !== 200 || !j.result || j.result.latitude == null) {
+      setMsg("Unknown postcode.", true); return;
+    }
+    lat = j.result.latitude; lon = j.result.longitude;
+  } catch {
+    setMsg("Network error (geocoding).", true); return;
+  }
+
+  L.circle([lat, lon], { radius: RADIUS_M, color: "#B8860B", weight: 1, opacity: 0.5,
+                         dashArray: "3 7", fillColor:"#EAB308", fillOpacity: 0.05 }).addTo(warstwa);
+  L.circleMarker([lat, lon], { radius: 8, color: "#B8860B", weight: 3,
+                               fillColor: "#fff", fillOpacity: 1 })
+    .addTo(warstwa)
+    .bindPopup(`Your postcode:<br><b>${pc.toUpperCase()}</b>`);
+
+  // policz odległości do wszystkich punktów, weź te w promieniu
+  const w = [];
+  for (const p of DATA) {
+    const d = haversine(lat, lon, p[0], p[1]);
+    if (d <= RADIUS_M) w.push([p[0], p[1], p[2], d]);
+  }
+
+  if (w.length) {
+    w.sort((a,b) => b[2] - a[2]);   // lekkie pod spodem, śmiertelne na wierzchu
+    for (const [la, lo, sev, d] of w) pinKolizji(la, lo, sev, d);
+    setBig(w.length, `recorded collisions within ~½ mile · ${YEAR}`);
+    map.fitBounds(L.latLngBounds(w.map(p => [p[0], p[1]])).extend([lat, lon]).pad(0.3));
+  } else {
+    // pusto → najbliższa (skan całości)
+    let best = null, bestD = Infinity;
+    for (const p of DATA) {
+      const d = haversine(lat, lon, p[0], p[1]);
+      if (d < bestD) { bestD = d; best = p; }
+    }
+    if (best) {
+      pinKolizji(best[0], best[1], best[2], bestD);
+      setBig(0, `collisions within ~½ mile — nearest ${odleglosc(bestD)} away · ${YEAR}`);
+      map.fitBounds(L.latLngBounds([[lat, lon], [best[0], best[1]]]).pad(0.3));
+    } else {
+      setBig(0, `collisions within ~½ mile · ${YEAR}`);
+      map.setView([lat, lon], 13);
+    }
+  }
+}
+
+document.getElementById("go").onclick = szukaj;
+document.getElementById("pc").addEventListener("keydown", e => { if (e.key === "Enter") szukaj(); });
+init();
+</script>
+</body>
+</html>
