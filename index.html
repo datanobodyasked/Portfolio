@@ -3,181 +3,336 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>datanobodyasked — a data portfolio nobody asked for</title>
+<title>datanobodyasked — simple tools that save time</title>
+<meta name="description" content="A solo builder making simple, practical tools with Google automations, dashboards, small websites and NFC. Plus a data portfolio nobody asked for.">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1B1A17;
-    --panel:#232019;
-    --line:#332f27;
-    --paper:#ECE9E2;
+    --ink:#1B1A17; --ink-panel:#232019; --ink-line:#332f27;
+    --paper:#ECE9E2; --card:#FFFFFF; --paper-line:#E2DCD0; --muted-l:#6c655a;
     --muted:#8f897c;
-    --yellow:#EAB308;
-    --yellow-bright:#FFE03B;
+    --yellow:#EAB308; --yellow-bright:#FFE03B; --orange:#EA6A1F;
+    --c-data:#3B82F6; --c-auto:#10B981; --c-web:#EA6A1F; --c-exp:#8B5CF6;
+    --maxw:960px;
+    --shadow:0 1px 2px rgba(27,26,23,.05), 0 10px 28px rgba(27,26,23,.06);
+    --shadow-h:0 2px 4px rgba(27,26,23,.06), 0 16px 36px rgba(27,26,23,.10);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--ink);
-    color:var(--paper);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.55;
-    -webkit-font-smoothing:antialiased;
-    padding:clamp(24px,6vw,80px) clamp(20px,6vw,72px);
-    max-width:1120px;
-    margin:0 auto;
-  }
-  .eyebrow{
-    font-family:"Space Mono",monospace;
-    font-size:.72rem;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color:var(--yellow);
-  }
-  .hero{border-bottom:1px solid var(--line);padding-bottom:clamp(32px,5vw,56px);margin-bottom:clamp(40px,6vw,72px)}
-  .thesis{
-    font-family:"Bricolage Grotesque",sans-serif;
-    font-weight:800;
-    font-size:clamp(2.8rem,10vw,6rem);
-    line-height:.95;
-    letter-spacing:-.02em;
-    margin:.4em 0 .5em;
-  }
-  .thesis .hi{color:var(--yellow)}
-  .lede{max-width:46ch;color:var(--paper);font-size:clamp(1rem,2.2vw,1.2rem);opacity:.9}
-  .meta{font-family:"Space Mono",monospace;font-size:.85rem;margin-top:1.6em;color:var(--muted)}
-  .meta a{color:var(--paper);text-decoration:none;border-bottom:1px solid var(--yellow);padding-bottom:1px}
-  .meta a:hover{color:var(--yellow-bright)}
-  .group{margin-bottom:clamp(40px,6vw,64px)}
-  .group-title{
-    font-family:"Space Mono",monospace;
-    font-size:.78rem;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--muted);
-    padding-bottom:.9em;
-    border-bottom:1px solid var(--line);
-    margin-bottom:1.6em;
-  }
-  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
-  .card{
-    display:block;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:22px 22px 20px;
-    text-decoration:none;
-    color:inherit;
-    transition:transform .15s ease,border-color .15s ease;
-  }
-  .card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--yellow);outline:none}
-  .card-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-  .pill{
-    font-family:"Space Mono",monospace;
-    font-size:.64rem;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    padding:3px 8px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    color:var(--muted);
-  }
-  .pill.live{color:var(--ink);background:var(--yellow);border-color:var(--yellow)}
-  .year{font-family:"Space Mono",monospace;font-size:.72rem;color:var(--muted)}
-  .card-title{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.3rem;line-height:1.15;margin-bottom:.5em}
-  .card-blurb{font-size:.95rem;opacity:.88;margin-bottom:1em}
-  .caveat{font-size:.85rem;color:var(--muted);border-left:2px solid var(--yellow);padding-left:10px;margin-bottom:1em}
-  .caveat b{color:var(--paper);font-weight:700}
-  .tags{font-family:"Space Mono",monospace;font-size:.7rem;color:var(--muted);letter-spacing:.04em}
-  .footer{border-top:1px solid var(--line);padding-top:28px;margin-top:24px}
-  .foot-note{max-width:52ch;color:var(--paper);opacity:.85}
-  .foot-meta{font-family:"Space Mono",monospace;font-size:.75rem;color:var(--muted);margin-top:1em}
-  @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover,.card:focus-visible{transform:none}}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+  body{background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Bricolage Grotesque",sans-serif}
+
+  .nav{position:sticky;top:0;z-index:20;background:rgba(27,26,23,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--ink-line)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:13px clamp(20px,5vw,40px)}
+  .brand{font-family:"Space Mono",monospace;font-weight:700;font-size:.95rem;color:var(--paper);text-decoration:none}
+  .brand .dot{color:var(--orange)}
+  .nav-links{display:flex;gap:clamp(14px,3vw,28px);font-family:"Space Mono",monospace;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase}
+  .nav-links a{color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent;transition:.15s}
+  .nav-links a:hover{color:var(--paper);border-bottom-color:var(--yellow)}
+  .nav-cta{color:var(--orange)!important}
+  @media (max-width:560px){.nav-links{gap:12px;font-size:.64rem}}
+
+  .inner{max-width:var(--maxw);margin:0 auto;padding:clamp(48px,7vw,76px) clamp(20px,5vw,40px)}
+  .eyebrow{font-family:"Space Mono",monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.9em;display:block;color:var(--orange)}
+  h2{font-weight:800;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.08;letter-spacing:-.01em;margin-bottom:.4em}
+  .sub{max-width:58ch;margin-bottom:2em;color:var(--muted-l)}
+
+  /* HERO dark */
+  .hero{background:var(--ink);color:var(--paper)}
+  .hero .eyebrow{color:var(--yellow)}
+  .hero-grid{display:grid;grid-template-columns:1.25fr .9fr;gap:clamp(28px,5vw,54px);align-items:start}
+  @media (max-width:760px){.hero-grid{grid-template-columns:1fr;gap:26px}}
+  .sig{font-family:"Space Mono",monospace;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1.3em}
+  .sig b{color:var(--yellow);font-weight:700}
+  .hero h1{font-weight:800;font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin-bottom:.5em}
+  .hero h1 .u{color:var(--yellow-bright)}
+  .hero .lede{opacity:.9;font-size:clamp(1rem,2vw,1.12rem);margin-bottom:1.5em;max-width:44ch}
+  .hero-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .btn{display:inline-block;background:var(--yellow);color:var(--ink);font-family:"Space Mono",monospace;font-weight:700;font-size:.84rem;padding:12px 24px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;transition:.15s}
+  .btn:hover{background:var(--orange);color:#fff;transform:translateY(-1px)}
+  .btn-text{font-family:"Space Mono",monospace;font-size:.82rem;color:var(--paper);text-decoration:none;border-bottom:2px solid var(--yellow)}
+  .btn-text:hover{color:var(--yellow-bright)}
+  .panel{background:var(--ink-panel);border:1px solid var(--ink-line);border-radius:16px;padding:22px 24px}
+  .panel .ph{font-family:"Space Mono",monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .panel .row{padding:11px 0;border-top:1px solid var(--ink-line);display:flex;gap:11px;align-items:flex-start}
+  .panel .row:first-of-type{border-top:none;padding-top:0}
+  .dot-c{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}
+  .panel .row b{font-weight:700;font-size:1rem;display:block;margin-bottom:1px}
+  .panel .row span{color:var(--muted);font-size:.86rem}
+  .feat .ph{display:flex;align-items:center;color:var(--c-auto)}
+  .livedot{width:8px;height:8px;border-radius:50%;background:var(--c-auto);margin-right:8px;box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  @media (prefers-reduced-motion:reduce){.livedot{animation:none}}
+  .feat-t{font-weight:800;font-size:1.5rem;line-height:1.1;margin-bottom:.35em}
+  .feat-p{color:var(--muted);font-size:.92rem;margin-bottom:1.1em}
+  .feat-link{font-family:"Space Mono",monospace;font-size:.84rem;font-weight:700;color:var(--yellow-bright);text-decoration:none;border-bottom:2px solid var(--yellow)}
+  .feat-link:hover{color:#fff}
+  .feat-body{transition:opacity .4s ease}
+  .feat-body.out{opacity:0}
+  .feat-nav{display:flex;align-items:center;gap:12px;margin-top:18px}
+  .feat-nav .feat-dots{flex:1;justify-content:center}
+  .feat-dots{display:flex;gap:8px}
+  .feat-dots button{width:8px;height:8px;border-radius:50%;border:none;padding:0;background:var(--ink-line);cursor:pointer;transition:background .2s}
+  .feat-dots button.on{background:var(--yellow)}
+  .feat-arrow{width:30px;height:30px;border-radius:50%;border:1px solid var(--ink-line);background:transparent;color:var(--paper);font-size:1.15rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s;flex:none}
+  .feat-arrow:hover{border-color:var(--yellow);background:rgba(255,255,255,.06)}
+
+  /* SERVICES light, rows with colour bars */
+  .svc{display:grid;grid-template-columns:34px 190px 1fr;gap:18px;padding:22px 0;border-top:1px solid var(--paper-line);align-items:baseline}
+  .svc:first-of-type{border-top:none}
+  .svc .bar{width:34px;height:4px;border-radius:999px;align-self:center}
+  .svc h3{font-weight:700;font-size:1.18rem}
+  .svc p{color:var(--muted-l);font-size:.95rem}
+  @media (max-width:560px){.svc{grid-template-columns:1fr;gap:5px;padding:18px 0}.svc .bar{display:none}}
+
+  /* CARD GRID — RobieStrony-style white cards */
+  .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .ccard{background:var(--card);border:1px solid var(--paper-line);border-left:4px solid var(--c,var(--paper-line));border-radius:14px;padding:20px 22px 18px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}
+  .ccard.link{cursor:pointer;text-decoration:none;color:inherit}
+  .ccard.link:hover{transform:translateY(-3px);box-shadow:var(--shadow-h)}
+  .ccard h3{font-weight:700;font-size:1.22rem;margin-bottom:.4em;display:flex;align-items:center;gap:9px;line-height:1.2}
+  .ccard h3 .cdot{width:11px;height:11px;border-radius:50%;background:var(--c,var(--muted));flex:none}
+  .ccard p{color:#4b453b;font-size:1rem;margin-bottom:.7em}
+  .ccard .fix{margin-top:auto;font-weight:700;font-size:.95rem;color:var(--c,var(--ink))}
+  .ccard .cfoot{margin-top:auto;padding-top:14px;border-top:1px solid var(--paper-line);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .ccard .meta{font-family:"Space Mono",monospace;font-size:.72rem;letter-spacing:.04em;color:var(--muted-l);white-space:nowrap}
+  .ccard .arr{color:var(--orange);font-weight:700;white-space:nowrap}
+  .ccard .cover-img{width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:14px;display:block;border:1px solid var(--paper-line)}
+  .catpill{font-family:"Space Mono",monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;white-space:nowrap}
+  .catpill.data{background:var(--c-data)} .catpill.auto{background:var(--c-auto)} .catpill.web{background:var(--c-web)} .catpill.exp{background:var(--c-exp)}
+  .catch{font-size:.86rem;color:var(--muted-l);border-left:3px solid var(--yellow);padding-left:10px;margin-bottom:.6em}
+  .catch b{color:var(--ink)}
+
+  /* ABOUT */
+  .about p{max-width:62ch;margin-bottom:1em}
+  .about p.muted{color:var(--muted-l)}
+  .about .pull{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(1.35rem,3.4vw,2.1rem);line-height:1.15;color:var(--ink);max-width:22ch;margin-top:.7em;padding-left:20px;border-left:4px solid var(--yellow)}
+
+  /* CONTACT light */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:560px){.form-grid{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  .field label{font-family:"Space Mono",monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-l)}
+  .field input,.field textarea{background:var(--card);border:1px solid var(--paper-line);border-radius:10px;padding:11px 13px;color:var(--ink);font-family:inherit;font-size:.95rem;box-shadow:var(--shadow)}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--orange)}
+  .field textarea{resize:vertical;min-height:92px}
+  .btn-dark{background:var(--ink);color:var(--paper)}
+  .btn-dark:hover{background:var(--orange);color:#fff}
+  .form-note{font-size:.8rem;color:var(--muted-l);margin-top:12px}
+  .form-ok{display:none;background:var(--card);border:1px solid var(--c-auto);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+  .contact-alt{font-family:"Space Mono",monospace;font-size:.86rem;margin-top:1.6em;color:var(--muted-l)}
+  .contact-alt a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--yellow)}
+
+  /* FOOTER dark bookend */
+  .foot{background:var(--ink);color:var(--paper)}
+  .foot-inner{max-width:var(--maxw);margin:0 auto;padding:34px clamp(20px,5vw,40px) 46px}
+  .foot-sum{font-family:"Space Mono",monospace;font-size:.76rem;color:var(--muted);letter-spacing:.04em}
+  .foot-note{opacity:.75;font-size:.9rem;max-width:56ch;margin-top:.8em}
 </style>
 </head>
-<body>
+<body id="top">
 
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#top" class="brand">datanobodyasked<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="#work">Work</a>
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#contact" class="nav-cta">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO dark -->
   <header class="hero">
-    <p class="eyebrow">A data portfolio nobody asked for</p>
-    <h1 class="thesis">97% useless.<br><span class="hi">3% useful.</span></h1>
-  <p class="lede">Over 10 years in UK transport taught me which road questions are worth asking. Now I'm learning to answer them with data — in public, mistakes included.</p>
-    <p class="meta"><a href="https://instagram.com/datanobodyasked" target="_blank" rel="noopener">Instagram</a> &nbsp;·&nbsp; <a href="https://youtube.com/@datanobodyasked" target="_blank" rel="noopener">YouTube</a></p>
+    <div class="inner">
+      <div class="hero-grid">
+        <div>
+          <p class="sig"><b>97% useless.</b> 3% useful. A data portfolio nobody asked for.</p>
+          <h1>Simple tools that <span class="u">save time</span>.</h1>
+          <p class="lede">I've always chased new tech, mostly to stop wasting my own time. Most people don't need corporate systems either. A lot gets solved quickly, cleanly, and well. That's why I'm here.</p>
+          <div class="hero-actions">
+            <a href="#contact" class="btn">See if I've got a fix for you</a>
+            <a href="#services" class="btn-text">See how I work ↓</a>
+          </div>
+        </div>
+        <aside class="panel feat" id="feat">
+          <p class="ph"><span class="livedot" id="featDot"></span><span id="featStatus">Live right now</span></p>
+          <div class="feat-body" id="featBody">
+            <h3 class="feat-t" id="featTitle">UK Collision Map</h3>
+            <p class="feat-p" id="featDesc">Type any UK postcode and see road collisions within half a mile. Real DfT data, plotted the moment you hit search.</p>
+            <a href="/collision-map/" class="feat-link" id="featLink">Open the map →</a>
+          </div>
+          <div class="feat-nav">
+            <button class="feat-arrow" id="featPrev" aria-label="Previous project">&#8249;</button>
+            <div class="feat-dots" id="featDots"></div>
+            <button class="feat-arrow" id="featNext" aria-label="Next project">&#8250;</button>
+          </div>
+        </aside>
+      </div>
+    </div>
   </header>
 
-  <main id="projects"></main>
+  <!-- WORK light cards -->
+  <section id="work">
+    <div class="inner">
+      <span class="eyebrow">The work</span>
+      <h2>Things I've built.</h2>
+      <p class="sub">Public data and small systems, pulled apart in public. The honest 3 percent.</p>
+      <div class="grid3" id="workGrid"></div>
+    </div>
+  </section>
 
-  <footer class="footer">
-    <p class="foot-note">Numbers are real. Conclusions stay cautious. Correlation isn't causation, and I'll say so out loud.</p>
-    <p class="foot-meta">Built lean · datanobodyasked · <span id="year"></span></p>
+  <!-- SERVICES light -->
+  <section id="services">
+    <div class="inner" style="padding-top:0">
+      <span class="eyebrow">Work with me</span>
+      <h2>Most problems have a simple fix.</h2>
+      <p class="sub">No platforms, no monthly lock-in. Usually it's one thing that needs to stop being manual, and Google's own tools plus a small site or an NFC tag are enough to do it.</p>
+      <div class="svc"><span class="bar" style="background:var(--c-auto)"></span><h3>Google automations</h3><p>Apps Script across Sheets, Gmail, Drive, Calendar and Forms. Less copying by hand, fewer missed steps.</p></div>
+      <div class="svc"><span class="bar" style="background:var(--c-data)"></span><h3>Dashboards</h3><p>Clear reports in Looker Studio and Sheets. One place, kept up to date on its own.</p></div>
+      <div class="svc"><span class="bar" style="background:var(--c-web)"></span><h3>Simple websites</h3><p>Small sites that collect enquiries, trigger an automation, or show a live report. Not brochures.</p></div>
+      <div class="svc"><span class="bar" style="background:var(--c-exp)"></span><h3>NFC &amp; printed codes</h3><p>NFC chips and QR codes printed in house. Tap or scan to open a form, a dashboard, or start a job.</p></div>
+    </div>
+  </section>
+
+  <!-- PROBLEMS light cards -->
+  <section>
+    <div class="inner" style="padding-top:0">
+      <span class="eyebrow">Problems this fixes</span>
+      <h2>Yours is probably on this list.</h2>
+      <p class="sub">A few of the everyday ones. Or close to it.</p>
+      <div class="grid3">
+        <div class="ccard" style="--c:var(--c-auto)"><h3><span class="cdot"></span>Requests all over the place</h3><p>Emails, messages, scraps of paper, all in different places.</p><p class="fix">→ One form, one sheet, one view.</p></div>
+        <div class="ccard" style="--c:var(--c-data)"><h3><span class="cdot"></span>Nobody spots the change</h3><p>A cell changes in a sheet and the team hears about it late.</p><p class="fix">→ A script emails you the moment it does.</p></div>
+        <div class="ccard" style="--c:var(--c-web)"><h3><span class="cdot"></span>Enquiries you can't see</h3><p>Leads arrive and quietly vanish into an inbox.</p><p class="fix">→ Straight onto a live dashboard you read.</p></div>
+        <div class="ccard" style="--c:var(--c-exp)"><h3><span class="cdot"></span>Stock counted by hand</h3><p>Walking around with a clipboard and a pen.</p><p class="fix">→ Tap a tag, type the number, done.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT light -->
+  <section id="about" class="about">
+    <div class="inner" style="padding-top:0">
+      <span class="eyebrow">About</span>
+      <h2>Who's behind this.</h2>
+      <p>I've always been the person who tries the new thing, usually to save myself time. Somewhere along the way that turned into building the tools instead of just using them.</p>
+      <p class="muted">I've spent years spotting where time quietly leaks away. What surprised me is how much you can fix with free, everyday tools, mostly Google's own kit. No corporate licences, no bloated systems. I care about simple solutions that hold up.</p>
+      <p class="pull">And I'll tell you when something isn't worth building.</p>
+    </div>
+  </section>
+
+  <!-- CONTACT light -->
+  <section id="contact">
+    <div class="inner" style="padding-top:0">
+      <span class="eyebrow">Contact</span>
+      <h2>Tell me what's slowing you down.</h2>
+      <p class="sub">Fill this in and see how I work. Describe the task you keep doing by hand, and I'll tell you honestly whether a simple fix is worth it.</p>
+      <form id="demoForm">
+        <div class="form-grid">
+          <div class="field"><label for="n">Your name</label><input id="n" type="text" required></div>
+          <div class="field"><label for="e">Email or phone</label><input id="e" type="text" required></div>
+          <div class="field full"><label for="m">What's taking too long?</label><textarea id="m" required></textarea></div>
+        </div>
+        <p style="margin-top:14px"><button type="submit" class="btn btn-dark">Send it over</button></p>
+        <p class="form-note">Demo form. It doesn't store anything yet, that's the next step (and it runs on the exact stack I build for clients).</p>
+      </form>
+      <div class="form-ok" id="formOk">Thanks. In the real version this lands in a sheet and pings me straight away. For now, message me on WhatsApp and it reaches me today.</div>
+      <p class="contact-alt">or reach me on <a href="https://wa.me/447874048761" target="_blank" rel="noopener">WhatsApp</a> · <a href="https://instagram.com/datanobodyasked" target="_blank" rel="noopener">Instagram</a> · <a href="https://youtube.com/@datanobodyasked" target="_blank" rel="noopener">YouTube</a></p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="foot-inner">
+      <p class="foot-sum">Automations · Dashboards · Simple websites · NFC &amp; QR from a 3D printer · Data on the side</p>
+      <p class="foot-note">Numbers are real. Conclusions stay cautious. And if simple isn't enough for your problem, I'll say so.</p>
+    </div>
   </footer>
 
 <script>
-  // ─── EDIT ONLY THIS LIST TO ADD/CHANGE PROJECTS ───
-  // group = category (free text). Same group name = same section.
-  // Order of sections follows the order groups first appear here.
-  const projects = [
-    {
-      title: "UK Collision Map",
-      group: "Maps",
-      url: "/collision-map/",
-      status: "live",              // "live" or "wip"
-      year: "2024",
-      blurb: "Type a UK postcode, see recorded road collisions within ~½ mile, plotted from DfT STATS19.",
-      caveat: "<b>The catch:</b> it counts incidents. That's a fact, not a danger rating.",
-      tags: ["Leaflet.js", "STATS19", "postcodes.io"]
-    },
-    {
-      title: "HGV Collision Analysis",
-      group: "Road-safety analysis",
-      url: "#",
-      status: "wip",
-      year: "2025",
-      blurb: "Where and why HGV collisions turn fatal — rural vs urban, road type, junction type.",
-      caveat: "<b>The catch:</b> a fatality rate within HGV collisions, not proof that trucks cause deaths.",
-      tags: ["pandas", "STATS19", "HGV"]
-    }
-  ];
-  // ──────────────────────────────────────────────────
+  // category colours (config, stays in the page)
+  var CATS = {
+    data:       { label:"Data",       color:"#3B82F6" },
+    automation: { label:"Automation", color:"#10B981" },
+    website:    { label:"Website",    color:"#EA6A1F" },
+    experiment: { label:"Experiment", color:"#8B5CF6" }
+  };
+  // projects now come live from the panel/store (not from this file)
+  var API = "https://api.datanobodyasked.com/api/projects";
 
-  const root = document.getElementById("projects");
-  const order = [];
-  projects.forEach(p => { if (!order.includes(p.group)) order.push(p.group); });
+  var grid=document.getElementById('workGrid');
+  var fi=0, timer=null, feats=[],
+      fbody=document.getElementById('featBody'),
+      elStatus=document.getElementById('featStatus'),
+      elDot=document.getElementById('featDot'),
+      elTitle=document.getElementById('featTitle'),
+      elDesc=document.getElementById('featDesc'),
+      elLink=document.getElementById('featLink'),
+      dotsWrap=document.getElementById('featDots'),
+      featEl=document.getElementById('feat'),
+      reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  order.forEach(group => {
-    const section = document.createElement("section");
-    section.className = "group";
-    const title = document.createElement("h2");
-    title.className = "group-title";
-    title.textContent = group;
-    section.appendChild(title);
-
-    const cards = document.createElement("div");
-    cards.className = "cards";
-
-    projects.filter(p => p.group === group).forEach(p => {
-      const card = document.createElement("a");
-      card.className = "card";
-      card.href = p.url;
-      if (/^https?:/.test(p.url)) { card.target = "_blank"; card.rel = "noopener"; }
-      const live = p.status === "live";
-      card.innerHTML =
-        '<div class="card-top">' +
-          '<span class="pill ' + (live ? 'live' : '') + '">' + (live ? 'Live' : 'In progress') + '</span>' +
-          '<span class="year">' + p.year + '</span>' +
-        '</div>' +
-        '<h3 class="card-title">' + p.title + '</h3>' +
-        '<p class="card-blurb">' + p.blurb + '</p>' +
-        '<p class="caveat">' + p.caveat + '</p>' +
-        '<p class="tags">' + p.tags.join('  ·  ') + '</p>';
-      cards.appendChild(card);
+  function render(projects){
+    grid.innerHTML='';
+    projects.forEach(function(p){
+      var c=CATS[p.cat]||{label:p.cat,color:"#8f897c"};
+      var a=document.createElement('a');
+      a.className='ccard link'; a.href=p.link||'#'; a.style.setProperty('--c',c.color);
+      a.innerHTML=
+        ((p.images&&p.images[0])?'<img class="cover-img" src="'+p.images[0]+'" alt="">':'')+
+        '<div style="margin-bottom:12px"><span class="catpill" style="background:'+c.color+';color:#fff">'+c.label+'</span></div>'+
+        '<h3>'+p.title+'</h3>'+
+        '<p>'+p.blurb+'</p>'+
+        (p.catch?'<p class="catch"><b>The catch:</b> '+p.catch+'</p>':'')+
+        '<div class="cfoot"><span class="meta">'+(p.tags||'')+'</span><span class="arr">'+p.status+' →</span></div>';
+      grid.appendChild(a);
     });
+    feats=projects.filter(function(p){return p.featured;}).map(function(p){
+      var live=p.status==='Live';
+      return {
+        status: live?'Live right now':(p.status==='Demo'?'Live demo':p.status),
+        color:  live?'#10B981':(p.status==='Demo'?'#EA6A1F':'#8f897c'),
+        title:p.title, desc:p.featDesc||p.blurb, link:p.featLink||(p.status+' →'), href:p.link||'#'
+      };
+    });
+    dotsWrap.innerHTML='';
+    feats.forEach(function(_,i){
+      var b=document.createElement('button');
+      b.addEventListener('click',function(){show(i,true);restart();});
+      dotsWrap.appendChild(b);
+    });
+    if(feats.length){ paint(0); restart(); }
+  }
 
-    section.appendChild(cards);
-    root.appendChild(section);
-  });
+  function paint(i){
+    var it=feats[i]; if(!it)return;
+    elStatus.textContent=it.status; elDot.style.background=it.color;
+    elTitle.textContent=it.title; elDesc.textContent=it.desc;
+    elLink.textContent=it.link; elLink.href=it.href;
+    Array.prototype.forEach.call(dotsWrap.children,function(b,j){b.className=j===i?'on':'';});
+    fi=i;
+  }
+  function show(i,instant){ if(instant||reduce){paint(i);return;} fbody.classList.add('out'); setTimeout(function(){paint(i);fbody.classList.remove('out');},300); }
+  function next(){ if(feats.length) show((fi+1)%feats.length); }
+  function prev(){ if(feats.length) show((fi-1+feats.length)%feats.length); }
+  function restart(){ if(timer)clearInterval(timer); if(!reduce&&feats.length>1) timer=setInterval(next,4500); }
 
-  document.getElementById("year").textContent = new Date().getFullYear();
+  document.getElementById('featNext').addEventListener('click',function(){next();restart();});
+  document.getElementById('featPrev').addEventListener('click',function(){prev();restart();});
+  featEl.addEventListener('mouseenter',function(){if(timer)clearInterval(timer);});
+  featEl.addEventListener('mouseleave',restart);
+
+  fetch(API).then(function(r){return r.json();}).then(render).catch(function(e){ console.warn('Could not load projects:',e); });
+
+  // ── contact demo form ──
+  var f=document.getElementById('demoForm'),ok=document.getElementById('formOk');
+  f.addEventListener('submit',function(e){e.preventDefault();f.style.display='none';ok.style.display='block';ok.scrollIntoView({behavior:'smooth',block:'center'});});
 </script>
 </body>
 </html>
