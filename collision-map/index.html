@@ -26,6 +26,7 @@
   #wynik .sub { font-size:clamp(15px,4vw,18px); color:#333; margin-top:2px; }
   #wynik.err { color:#c00; font-size:18px; padding-top:12px; }
   #map { height:64vh; width:100%; background:#eee; }
+  .leaflet-tile { filter: grayscale(1) brightness(1.05) contrast(.92); }
   #foot { padding:10px 14px 16px; font-size:12px; color:#888; line-height:1.5; }
   #foot b { color:#B8860B; font-weight:700; }
   .legend { background:rgba(255,255,255,.92); color:#333; padding:8px 10px; border-radius:8px; font-size:13px;
@@ -49,9 +50,9 @@
 <script>
 const RADIUS_M = 804.672;
 const STYLE = {
-  1: { r:7, c:"#d7191c", o:0.95 },   // fatal
-  2: { r:6, c:"#fd8d3c", o:0.90 },   // serious
-  3: { r:4, c:"#2c7fb8", o:0.70 }    // slight
+  1: { r:9, c:"#e40b0b", o:1 },     // fatal
+  2: { r:7, c:"#f4790f", o:0.98 },   // serious
+  3: { r:6, c:"#1763d6", o:0.95 }    // slight
 };
 const SEV_TXT = { 1: "fatal", 2: "serious", 3: "slight" };
 
@@ -101,7 +102,7 @@ function setMsg(txt, err) {
 function pinKolizji(la, lo, sev, dist) {
   const s = STYLE[sev] || { r:5, c:"#888", o:0.8 };
   L.circleMarker([la, lo], {
-      radius: s.r, color: "#fff", weight: 1.2,
+      radius: s.r, color: "#fff", weight: 2,
       fillColor: s.c, fillOpacity: s.o
     })
     .addTo(warstwa)
