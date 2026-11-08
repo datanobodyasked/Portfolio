@@ -33,6 +33,9 @@
             line-height:20px; box-shadow:0 2px 8px rgba(0,0,0,.2); }
   .legend .dot { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:7px; vertical-align:middle; }
   .leaflet-popup-content-wrapper { border-radius:10px; border-left:3px solid var(--yellow); }
+  .arrow-layer { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:650; }
+  .edge-arrow { position:absolute; width:0; height:0; pointer-events:auto; cursor:pointer; }
+  .edge-arrow svg { position:absolute; left:-12px; top:-12px; width:24px; height:24px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
 </style>
 </head>
 <body>
@@ -58,6 +61,7 @@ const SEV_TXT = { 1: "fatal", 2: "serious", 3: "slight" };
 
 let DATA = null, YEAR = null;
 let map, warstwa;
+let markersLL = [];
 
 map = L.map("map").setView([54.5, -3], 6);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -75,6 +79,35 @@ legenda.onAdd = function () {
   return div;
 };
 legenda.addTo(map);
+
+// edge arrows pointing to collisions that are off-screen
+const arrowLayer = L.DomUtil.create("div", "arrow-layer", document.getElementById("map"));
+function updateArrows() {
+  arrowLayer.innerHTML = "";
+  if (!markersLL.length) return;
+  const sz = map.getSize(), w = sz.x, h = sz.y, cx = w/2, cy = h/2, pad = 16;
+  markersLL.forEach(function (m) {
+    const p = map.latLngToContainerPoint([m.lat, m.lng]);
+    if (p.x >= 0 && p.x <= w && p.y >= 0 && p.y <= h) return; // visible → no arrow
+    const dx = p.x - cx, dy = p.y - cy;
+    if (!dx && !dy) return;
+    const s = Math.min((cx - pad) / Math.max(Math.abs(dx), 0.001),
+                       (cy - pad) / Math.max(Math.abs(dy), 0.001));
+    const ex = cx + dx * s, ey = cy + dy * s;
+    const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    const col = (STYLE[m.sev] || { c: "#888" }).c;
+    const a = document.createElement("div");
+    a.className = "edge-arrow";
+    a.style.left = ex + "px";
+    a.style.top = ey + "px";
+    a.style.transform = "rotate(" + ang + "deg)";
+    a.title = (SEV_TXT[m.sev] || "collision") + " — click to jump";
+    a.innerHTML = '<svg viewBox="0 0 12 12"><path d="M2 2 L10 6 L2 10 Z" fill="' + col + '" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+    a.addEventListener("click", function () { map.setView([m.lat, m.lng], Math.max(map.getZoom(), 15)); });
+    arrowLayer.appendChild(a);
+  });
+}
+map.on("move zoom moveend zoomend viewreset resize", updateArrows);
 
 function haversine(la1, lo1, la2, lo2) {
   const R = 6371000, r = d => d * Math.PI / 180;
@@ -121,6 +154,7 @@ async function szukaj() {
   if (!DATA) { setMsg("Loading data…", false); return; }
   setMsg("Searching…", false);
   warstwa.clearLayers();
+  markersLL = []; updateArrows();
 
   let lat, lon;
   try {
@@ -152,7 +186,9 @@ async function szukaj() {
     w.sort((a,b) => b[2] - a[2]);   // lekkie pod spodem, śmiertelne na wierzchu
     for (const [la, lo, sev, d] of w) pinKolizji(la, lo, sev, d);
     setBig(w.length, `recorded collisions within ~½ mile · ${YEAR}`);
+    markersLL = w.map(p => ({ lat: p[0], lng: p[1], sev: p[2] }));
     map.fitBounds(L.latLngBounds(w.map(p => [p[0], p[1]])).extend([lat, lon]).pad(0.3));
+    updateArrows();
   } else {
     // pusto → najbliższa (skan całości)
     let best = null, bestD = Infinity;
@@ -163,7 +199,9 @@ async function szukaj() {
     if (best) {
       pinKolizji(best[0], best[1], best[2], bestD);
       setBig(0, `collisions within ~½ mile — nearest ${odleglosc(bestD)} away · ${YEAR}`);
+      markersLL = [{ lat: best[0], lng: best[1], sev: best[2] }];
       map.fitBounds(L.latLngBounds([[lat, lon], [best[0], best[1]]]).pad(0.3));
+      updateArrows();
     } else {
       setBig(0, `collisions within ~½ mile · ${YEAR}`);
       map.setView([lat, lon], 13);
